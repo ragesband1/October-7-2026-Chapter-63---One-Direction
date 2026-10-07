@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 63 - One Direction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050508;
+            color: #e2e8f0;
+            overflow: hidden;
+            user-select: none;
+        }
+        .cinzel {
+            font-family: 'Cinzel', serif;
+        }
+        canvas {
+            display: block;
+            background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+        }
+        /* Custom Scrollbar for RPG menus */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.4);
+        }
+        .glow-box {
+            box-shadow: 0 0 25px rgba(147, 51, 234, 0.25), inset 0 0 15px rgba(147, 51, 234, 0.15);
+        }
+        .scanlines {
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.3));
+            background-size: 100% 4px;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen relative flex flex-col items-center justify-center">
+
+    <!-- Main Game Container -->
+    <div id="game-container" class="relative w-full h-full flex items-center justify-center overflow-hidden">
+        
+        <!-- Canvas Layer -->
+        <canvas id="gameCanvas" class="w-full h-full cursor-crosshair"></canvas>
+        <div class="absolute inset-0 scanlines pointer-events-none opacity-40"></div>
+
+        <!-- Start Screen / Story Intro Overlay -->
+        <div id="intro-screen" class="absolute inset-0 bg-slate-950/95 z-50 flex flex-col items-center justify-center p-6 text-center backdrop-blur-md">
+            <div class="max-w-3xl bg-slate-900/90 border border-purple-500/40 rounded-2xl p-8 glow-box shadow-2xl">
+                <span class="text-purple-400 font-bold tracking-widest uppercase text-xs">An Ediously Writ Paths & The Rages Band Production</span>
+                <h1 class="cinzel text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mt-2 mb-4">Chapter 63: Bedtime Stories</h1>
+                <h2 class="cinzel text-xl text-purple-200 mb-6 font-semibold">One Direction: The Labyrinth of Skull Island</h2>
+                
+                <div class="text-slate-300 text-left text-sm md:text-base space-y-3 bg-slate-950/70 p-5 rounded-xl border border-slate-800 max-h-64 overflow-y-auto mb-6">
+                    <p><strong class="text-purple-400">The Legend:</strong> Shafu, Zayn, Edgar, and Poe walked the humble boulevard in "One Direction". Louis, driven by pride, crossed into forbidden multiple directions and became trapped in the dreaded Labyrinth of Skull Island—guarded by soul-eating Dementors!</p>
+                    <p><strong class="text-purple-400">Your Mission:</strong> Take control of Zayn and the humble crew, rescue Louis before his soul is consumed, invoke the magic word <code class="text-pink-400 bg-purple-950/80 px-1.5 py-0.5 rounded font-mono">Hel-E-Cadabra</code>, and defeat the Death Eaters with Grim Reaper's granted powers!</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="startGame()" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-purple-600/30 transition transform hover:scale-105 cinzel tracking-wider">
+                        <i class="fa-solid fa-play mr-2"></i> Begin Adventure
+                    </button>
+                    <button onclick="toggleHowToPlay()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl border border-slate-700 transition">
+                        <i class="fa-solid fa-book-open mr-2"></i> Controls & Guide
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Modal -->
+        <div id="help-modal" class="hidden absolute inset-0 bg-slate-950/90 z-60 flex items-center justify-center p-6">
+            <div class="max-w-lg bg-slate-900 border border-purple-500/40 rounded-2xl p-6 glow-box text-left">
+                <h3 class="cinzel text-2xl font-bold text-purple-400 mb-4"><i class="fa-solid fa-gamepad mr-2"></i> Game Controls & Guide</h3>
+                <ul class="space-y-2 text-sm text-slate-300 mb-6">
+                    <li><strong class="text-white">WASD / Arrow Keys:</strong> Move Hero (Zayn)</li>
+                    <li><strong class="text-white">Spacebar / J:</strong> Melee / Magic Staff Attack</li>
+                    <li><strong class="text-white">Keys 1-4:</strong> Cast Spells (Hel-E-Cadabra, Soul Blast, Humble Aura, Dash)</li>
+                    <li><strong class="text-white">E Key:</strong> Open Inventory & Equipment</li>
+                    <li><strong class="text-white">Q Key:</strong> Open Skill Tree</li>
+                    <li><strong class="text-white">F Key:</strong> Interact with NPCs (Grim Reaper, Shafu, Poe, Edgar, Louis)</li>
+                    <li><strong class="text-white">Escape:</strong> Pause Menu</li>
+                </ul>
+                <button onclick="toggleHowToPlay()" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl cinzel">Got It!</button>
+            </div>
+        </div>
+
+        <!-- HUD Overlay -->
+        <div id="hud" class="hidden absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+            <!-- Top Bar -->
+            <div class="flex justify-between items-start w-full">
+                <!-- Player Status Card -->
+                <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 rounded-2xl p-3 md:p-4 pointer-events-auto flex items-center gap-4 shadow-xl">
+                    <div class="relative w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-800 flex items-center justify-center text-white cinzel font-bold text-xl border-2 border-purple-400 shadow-inner">
+                        Z
+                        <span id="player-level" class="absolute -bottom-2 -right-2 bg-pink-600 text-xs px-1.5 py-0.5 rounded-full border border-pink-400">Lv.1</span>
+                    </div>
+                    <div class="flex flex-col gap-1.5 w-36 md:w-48">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-slate-200 cinzel">Zayn (Humble Hero)</span>
+                            <span id="hp-text" class="text-red-400">100/100</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                            <div id="hp-bar" class="bg-gradient-to-r from-red-600 to-rose-500 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-indigo-300">Mana / Energy</span>
+                            <span id="mana-text" class="text-indigo-400">50/50</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                            <div id="mana-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex flex-col pl-3 border-l border-slate-800 text-xs text-slate-400 space-y-1">
+                        <div>XP: <span id="xp-text" class="text-amber-400 font-bold">0 / 100</span></div>
+                        <div>Gold: <span id="gold-text" class="text-yellow-400 font-bold">50</span></div>
+                        <div>Humility: <span id="humility-text" class="text-purple-300 font-bold">15</span></div>
+                    </div>
+                </div>
+
+                <!-- Minimap & Objective Tracker -->
+                <div class="flex flex-col items-end gap-3 pointer-events-auto">
+                    <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 rounded-2xl p-3 shadow-xl max-w-xs">
+                        <div class="flex items-center justify-between mb-1.5 border-b border-slate-800 pb-1">
+                            <span class="cinzel text-xs font-bold text-purple-400"><i class="fa-solid fa-scroll mr-1"></i> Active Quest</span>
+                            <span class="text-[10px] bg-purple-950 text-purple-300 px-1.5 py-0.5 rounded border border-purple-800">Main</span>
+                        </div>
+                        <div id="quest-title" class="text-xs font-semibold text-slate-200">Find Louis in the Labyrinth</div>
+                        <div id="quest-desc" class="text-[11px] text-slate-400 mt-0.5">Explore Skull Island and speak with Grim Reaper.</div>
+                    </div>
+
+                    <!-- Mini Map Canvas -->
+                    <div class="w-28 h-28 bg-slate-950/90 border border-slate-700/80 rounded-2xl overflow-hidden shadow-xl relative">
+                        <canvas id="miniMapCanvas" width="112" height="112" class="w-full h-full"></canvas>
+                        <div class="absolute bottom-1 right-1 text-[9px] text-slate-500 px-1 bg-slate-900/80 rounded">MAP</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Bar & Action Buttons -->
+            <div class="flex flex-col md:flex-row justify-between items-center w-full gap-4">
+                <!-- Action / Skill Quickbar -->
+                <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 rounded-2xl p-2.5 flex items-center gap-2 pointer-events-auto shadow-xl">
+                    <div class="relative group flex flex-col items-center">
+                        <button onclick="useSkill(1)" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 border border-purple-500/50 rounded-xl flex items-center justify-center text-purple-300 text-lg transition shadow-inner">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </button>
+                        <span class="absolute -top-2 -left-2 bg-slate-950 text-[10px] text-slate-400 w-5 h-5 rounded-full flex items-center justify-center border border-slate-700">1</span>
+                        <span class="text-[10px] text-slate-400 mt-0.5">Hel-E-Cad</span>
+                    </div>
+                    <div class="relative group flex flex-col items-center">
+                        <button onclick="useSkill(2)" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 border border-indigo-500/50 rounded-xl flex items-center justify-center text-indigo-300 text-lg transition shadow-inner">
+                            <i class="fa-solid fa-bolt"></i>
+                        </button>
+                        <span class="absolute -top-2 -left-2 bg-slate-950 text-[10px] text-slate-400 w-5 h-5 rounded-full flex items-center justify-center border border-slate-700">2</span>
+                        <span class="text-[10px] text-slate-400 mt-0.5">Soul Blast</span>
+                    </div>
+                    <div class="relative group flex flex-col items-center">
+                        <button onclick="useSkill(3)" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 border border-pink-500/50 rounded-xl flex items-center justify-center text-pink-300 text-lg transition shadow-inner">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </button>
+                        <span class="absolute -top-2 -left-2 bg-slate-950 text-[10px] text-slate-400 w-5 h-5 rounded-full flex items-center justify-center border border-slate-700">3</span>
+                        <span class="text-[10px] text-slate-400 mt-0.5">Humble Aura</span>
+                    </div>
+                    <div class="relative group flex flex-col items-center">
+                        <button onclick="useSkill(4)" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 border border-amber-500/50 rounded-xl flex items-center justify-center text-amber-300 text-lg transition shadow-inner">
+                            <i class="fa-solid fa-person-running"></i>
+                        </button>
+                        <span class="absolute -top-2 -left-2 bg-slate-950 text-[10px] text-slate-400 w-5 h-5 rounded-full flex items-center justify-center border border-slate-700">4</span>
+                        <span class="text-[10px] text-slate-400 mt-0.5">Dash</span>
+                    </div>
+                </div>
+
+                <!-- Menu Buttons -->
+                <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 rounded-2xl p-2.5 flex items-center gap-3 pointer-events-auto shadow-xl">
+                    <button onclick="toggleInventory()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-sm font-semibold flex items-center gap-2 transition">
+                        <i class="fa-solid fa-bag-shopping text-purple-400"></i> Inventory <span class="text-xs bg-slate-950 px-1.5 py-0.5 rounded text-slate-400">E</span>
+                    </button>
+                    <button onclick="toggleSkillTree()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-sm font-semibold flex items-center gap-2 transition">
+                        <i class="fa-solid fa-tree text-indigo-400"></i> Skill Tree <span class="text-xs bg-slate-950 px-1.5 py-0.5 rounded text-slate-400">Q</span>
+                    </button>
+                    <button onclick="togglePauseMenu()" class="p-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl transition">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dialogue Box (NPC Interaction) -->
+        <div id="dialogue-box" class="hidden absolute bottom-24 left-1/2 transform -translate-x-1/2 w-11/12 max-w-2xl bg-slate-900/95 border-2 border-purple-500/60 rounded-2xl p-6 glow-box z-40 shadow-2xl">
+            <div class="flex items-start gap-4">
+                <div id="npc-avatar" class="w-14 h-14 rounded-xl bg-purple-950 border border-purple-400 flex items-center justify-center text-purple-300 text-2xl font-bold cinzel shadow-inner shrink-0">
+                    G
+                </div>
+                <div class="flex-1">
+                    <div id="npc-name" class="cinzel font-bold text-purple-400 text-lg mb-1">Grim Reaper (Death Skull)</div>
+                    <div id="npc-text" class="text-slate-200 text-sm md:text-base leading-relaxed mb-4">"Greetings travelers. You have entered Skull Island. Do you wish to save your proud friend Louis from the Dementors?"</div>
+                    <div class="flex justify-end gap-3">
+                        <button onclick="progressDialogue()" class="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-sm cinzel shadow-lg shadow-purple-600/30 transition">
+                            Continue <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Modal -->
+        <div id="inventory-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="w-full max-w-xl bg-slate-900 border border-purple-500/40 rounded-2xl p-6 glow-box shadow-2xl">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-3">
+                    <h3 class="cinzel text-2xl font-bold text-purple-400 flex items-center gap-2">
+                        <i class="fa-solid fa-bag-shopping"></i> Inventory & Equipment
+                    </h3>
+                    <button onclick="toggleInventory()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Equipment Slots -->
+                    <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                        <h4 class="text-xs cinzel font-bold text-slate-400 uppercase tracking-wider mb-3">Equipped Gear</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400"><i class="fa-solid fa-wand-sparkles mr-2 text-purple-400"></i> Weapon</span>
+                                <span id="equip-weapon" class="text-purple-300 font-semibold">Humble Staff of One Direction</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                                <span class="text-slate-400"><i class="fa-solid fa-shield mr-2 text-indigo-400"></i> Armor</span>
+                                <span id="equip-armor" class="text-indigo-300 font-semibold">Robe of Humility</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item Bag Grid -->
+                    <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                        <h4 class="text-xs cinzel font-bold text-slate-400 uppercase tracking-wider mb-3">Consumables & Relics</h4>
+                        <div id="inventory-grid" class="grid grid-cols-4 gap-2">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="toggleInventory()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-sm transition">Close Bag</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skill Tree Modal -->
+        <div id="skilltree-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="w-full max-w-2xl bg-slate-900 border border-purple-500/40 rounded-2xl p-6 glow-box shadow-2xl">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-3">
+                    <h3 class="cinzel text-2xl font-bold text-purple-400 flex items-center gap-2">
+                        <i class="fa-solid fa-tree"></i> Progression & Skill Tree
+                    </h3>
+                    <button onclick="toggleSkillTree()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 mb-6 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-slate-300 font-semibold">Available Skill Points: <span id="skill-points" class="text-amber-400 font-bold">2</span></span>
+                        <span class="text-xs text-slate-400">Unlock powerful magic granted by Grim Reaper</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
+                            <div>
+                                <h4 class="cinzel font-bold text-purple-300 text-sm mb-1"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Hel-E-Cadabra</h4>
+                                <p class="text-xs text-slate-400 mb-3">Unleashes divine incantation that instantly stuns and repels Dementors.</p>
+                            </div>
+                            <button onclick="upgradeSkill('helec')" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg shadow transition">Upgrade (Lv.<span id="skill-helec-lvl">1</span>)</button>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
+                            <div>
+                                <h4 class="cinzel font-bold text-indigo-300 text-sm mb-1"><i class="fa-solid fa-bolt mr-1"></i> Soul Blast</h4>
+                                <p class="text-xs text-slate-400 mb-3">Fires high-speed soul projectiles across the labyrinth maze.</p>
+                            </div>
+                            <button onclick="upgradeSkill('soulblast')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow transition">Upgrade (Lv.<span id="skill-blast-lvl">1</span>)</button>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
+                            <div>
+                                <h4 class="cinzel font-bold text-pink-300 text-sm mb-1"><i class="fa-solid fa-shield-halved mr-1"></i> Humble Aura</h4>
+                                <p class="text-xs text-slate-400 mb-3">Increases defense and nullifies pride penalty in hazardous zones.</p>
+                            </div>
+                            <button onclick="upgradeSkill('humble')" class="w-full py-2 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold rounded-lg shadow transition">Upgrade (Lv.<span id="skill-humble-lvl">1</span>)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="toggleSkillTree()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-sm transition">Close Skill Tree</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pause Menu Modal -->
+        <div id="pause-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="w-full max-w-sm bg-slate-900 border border-purple-500/40 rounded-2xl p-6 glow-box shadow-2xl text-center">
+                <h3 class="cinzel text-2xl font-bold text-purple-400 mb-6">Game Paused</h3>
+                <div class="space-y-3">
+                    <button onclick="togglePauseMenu()" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl cinzel shadow transition">Resume Adventure</button>
+                    <button onclick="restartGame()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl border border-slate-700 transition">Restart Chapter</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over / Victory Modal -->
+        <div id="endgame-modal" class="hidden absolute inset-0 bg-slate-950/95 z-70 flex items-center justify-center p-6">
+            <div class="max-w-md bg-slate-900 border border-purple-500/50 rounded-2xl p-8 glow-box text-center shadow-2xl">
+                <div id="endgame-icon" class="text-6xl text-purple-400 mb-4"><i class="fa-solid fa-crown"></i></div>
+                <h3 id="endgame-title" class="cinzel text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-2">Victory!</h3>
+                <p id="endgame-desc" class="text-slate-300 text-sm mb-6">Louis has been rescued! The Dementors vanished and peace was restored through humility and friendship.</p>
+                <button onclick="restartGame()" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg cinzel">Play Again</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Audio Synthesizer using Web Audio API (Zero external sound files)
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playTone(freq, type, duration, vol = 0.1) {
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+            attack() { this.playTone(320, 'triangle', 0.15, 0.15); }
+            magic() { this.playTone(600, 'sine', 0.3, 0.2); setTimeout(()=>this.playTone(900, 'sine', 0.3, 0.2), 100); }
+            hit() { this.playTone(120, 'sawtooth', 0.2, 0.2); }
+            victory() { 
+                [440, 554, 659, 880].forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, 'sine', 0.4, 0.2), i * 150);
+                });
+            }
+        }
+        const sfx = new SoundFX();
+
+        // Game State & Configuration
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const miniMapCanvas = document.getElementById('miniMapCanvas');
+        const miniCtx = miniMapCanvas.getContext('2d');
+
+        let gameRunning = false;
+        let isPaused = false;
+        let keys = {};
+
+        // World and Map Dimensions (Labyrinth of Skull Island)
+        const WORLD_WIDTH = 2400;
+        const WORLD_HEIGHT = 2400;
+
+        // Player Stats
+        let player = {
+            x: 1200,
+            y: 2000,
+            radius: 16,
+            speed: 4.5,
+            hp: 100,
+            maxHp: 100,
+            mana: 50,
+            maxMana: 50,
+            level: 1,
+            xp: 0,
+            nextXp: 100,
+            gold: 50,
+            humility: 15,
+            skillPoints: 2,
+            facing: 'down',
+            invincibleTimer: 0
+        };
+
+        // Skills Levels
+        let skills = {
+            helec: { level: 1, manaCost: 15, cooldown: 0 },
+            soulblast: { level: 1, manaCost: 10, cooldown: 0 },
+            humble: { level: 1, manaCost: 20, cooldown: 0 },
+            dash: { level: 1, manaCost: 15, cooldown: 0 }
+        };
+
+        // Inventory Items
+        let inventory = [
+            { name: "Humble Potion", count: 3, type: "potion", icon: "fa-flask" },
+            { name: "Grim Relic", count: 1, type: "relic", icon: "fa-skull" },
+            { name: "Direction Map", count: 1, type: "quest", icon: "fa-map" }
+        ];
+
+        // Quests State
+        let currentQuestIndex = 0;
+        const quests = [
+            { title: "Find Louis in the Labyrinth", desc: "Explore Skull Island and speak with Grim Reaper at the maze entrance." },
+            { title: "Defeat Death Eaters / Dementors", desc: "Clear out 3 Dementors guarding the labyrinth paths." },
+            { title: "Cast Hel-E-Cadabra", desc: "Invoke the sacred incantation to free Louis and the trapped souls." },
+            { title: "Return to the Humble Path", desc: "Celebrate friendship with Shafu, Zayn, Edgar, and Poe." }
+        ];
+
+        // Entities
+        let npcs = [];
+        let enemies = [];
+        let projectiles = [];
+        let particles = [];
+        let walls = [];
+
+        // Initialize Game Map Walls (Labyrinth)
+        function initWorld() {
+            walls = [
+                // Outer Boundaries
+                { x: 0, y: 0, w: WORLD_WIDTH, h: 40 },
+                { x: 0, y: WORLD_HEIGHT-40, w: WORLD_WIDTH, h: 40 },
+                { x: 0, y: 0, w: 40, h: WORLD_HEIGHT },
+                { x: WORLD_WIDTH-40, y: 0, w: 40, h: WORLD_HEIGHT },
+                // Labyrinth Maze Walls
+                { x: 400, y: 400, w: 400, h: 60 },
+                { x: 1000, y: 300, w: 60, h: 500 },
+                { x: 400, y: 900, w: 700, h: 60 },
+                { x: 1400, y: 600, w: 500, h: 60 },
+                { x: 1400, y: 900, w: 60, h: 600 },
+                { x: 800, y: 1300, w: 600, h: 60 },
+                { x: 300, y: 1500, w: 60, h: 500 },
+                { x: 1200, y: 1700, w: 700, h: 60 }
+            ];
+
+            // NPCs
+            npcs = [
+                { id: 'grim', name: 'Grim Reaper (Death Skull)', x: 1200, y: 1850, radius: 22, icon: 'fa-skull', dialogueStep: 0, active: true },
+                { id: 'shafu', name: 'Shafu (Humble Friend)', x: 1100, y: 2100, radius: 18, icon: 'fa-user', dialogueStep: 0, active: true },
+                { id: 'poe', name: 'Poe (Humble Friend)', x: 1250, y: 2120, radius: 18, icon: 'fa-user', dialogueStep: 0, active: true },
+                { id: 'edgar', name: 'Edgar (Humble Friend)', x: 1350, y: 2100, radius: 18, icon: 'fa-user', dialogueStep: 0, active: true },
+                { id: 'louis', name: 'Louis (Lost in Maze)', x: 1600, y: 700, radius: 20, icon: 'fa-user-secret', dialogueStep: 0, active: true, rescued: false }
+            ];
+
+            // Enemies (Dementors / Death Eaters)
+            enemies = [
+                { x: 600, y: 600, radius: 18, hp: 50, maxHp: 50, speed: 2, attackCooldown: 0 },
+                { x: 1200, y: 500, radius: 18, hp: 50, maxHp: 50, speed: 2.2, attackCooldown: 0 },
+                { x: 1700, y: 1200, radius: 20, hp: 70, maxHp: 70, speed: 2.5, attackCooldown: 0 },
+                { x: 600, y: 1800, radius: 18, hp: 50, maxHp: 50, speed: 2, attackCooldown: 0 }
+            ];
+        }
+
+        // Resize Canvas dynamically
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Input Listeners
+        window.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            if (e.key === 'e' || e.key === 'E') toggleInventory();
+            if (e.key === 'q' || e.key === 'Q') toggleSkillTree();
+            if (e.key === 'Escape') togglePauseMenu();
+            if (e.key === 'f' || e.key === 'F') checkNPCInteraction();
+            if (e.key === ' ') { e.preventDefault(); playerAttack(); }
+            if (e.key === '1') useSkill(1);
+            if (e.key === '2') useSkill(2);
+            if (e.key === '3') useSkill(3);
+            if (e.key === '4') useSkill(4);
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        // Start Game
+        function startGame() {
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            initWorld();
+            gameRunning = true;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function restartGame() {
+            document.getElementById('endgame-modal').classList.add('hidden');
+            document.getElementById('pause-modal').classList.add('hidden');
+            player.hp = player.maxHp;
+            player.x = 1200;
+            player.y = 2000;
+            currentQuestIndex = 0;
+            initWorld();
+            gameRunning = true;
+            isPaused = false;
+        }
+
+        function toggleHowToPlay() {
+            const modal = document.getElementById('help-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function toggleInventory() {
+            const modal = document.getElementById('inventory-modal');
+            modal.classList.toggle('hidden');
+            renderInventoryGrid();
+        }
+
+        function toggleSkillTree() {
+            const modal = document.getElementById('skilltree-modal');
+            modal.classList.toggle('hidden');
+            updateSkillTreeUI();
+        }
+
+        function togglePauseMenu() {
+            const modal = document.getElementById('pause-modal');
+            modal.classList.toggle('hidden');
+            isPaused = !isPaused;
+        }
+
+        function renderInventoryGrid() {
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
+            inventory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-900 p-3 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center cursor-pointer hover:border-purple-500 transition';
+                div.innerHTML = `<i class="fa-solid ${item.icon} text-purple-400 text-lg mb-1"></i><span class="text-[10px] text-slate-300 font-semibold">${item.name}</span><span class="text-[9px] text-slate-500">x${item.count}</span>`;
+                div.onclick = () => useItem(item);
+                grid.appendChild(div);
+            });
+        }
+
+        function useItem(item) {
+            if (item.type === 'potion') {
+                if (player.hp < player.maxHp) {
+                    player.hp = Math.min(player.maxHp, player.hp + 40);
+                    item.count--;
+                    if (item.count <= 0) inventory = inventory.filter(i => i !== item);
+                    renderInventoryGrid();
+                    sfx.magic();
+                }
+            }
+        }
+
+        function updateSkillTreeUI() {
+            document.getElementById('skill-points').innerText = player.skillPoints;
+            document.getElementById('skill-helec-lvl').innerText = skills.helec.level;
+            document.getElementById('skill-blast-lvl').innerText = skills.soulblast.level;
+            document.getElementById('skill-humble-lvl').innerText = skills.humble.level;
+        }
+
+        function upgradeSkill(skillKey) {
+            if (player.skillPoints > 0) {
+                player.skillPoints--;
+                skills[skillKey].level++;
+                updateSkillTreeUI();
+                sfx.victory();
+            }
+        }
+
+        // NPC Dialogue & Interaction System
+        let activeNPC = null;
+        function checkNPCInteraction() {
+            let interactionRadius = 50;
+            npcs.forEach(npc => {
+                let dist = Math.hypot(player.x - npc.x, player.y - npc.y);
+                if (dist < interactionRadius && npc.active) {
+                    activeNPC = npc;
+                    showDialogue(npc);
+                }
+            });
+        }
+
+        function showDialogue(npc) {
+            const box = document.getElementById('dialogue-box');
+            const nameEl = document.getElementById('npc-name');
+            const textEl = document.getElementById('npc-text');
+            const avatarEl = document.getElementById('npc-avatar');
+
+            nameEl.innerText = npc.name;
+            avatarEl.innerHTML = `<i class="fa-solid ${npc.icon}"></i>`;
+
+            if (npc.id === 'grim') {
+                if (npc.dialogueStep === 0) {
+                    textEl.innerText = `"Greetings travelers! I am Grim Reaper, the Skull Wizard. Your proud friend Louis is trapped in the Labyrinth of Dementors. You have 5 minutes to save him!"`;
+                } else if (npc.dialogueStep === 1) {
+                    textEl.innerText = `"I grant you incognito soul powers! Remember the sacred magic word: Hel-E-Cadabra. Defeat the Death Eaters and rescue Louis!"`;
+                    currentQuestIndex = 1;
+                }
+            } else if (npc.id === 'shafu' || npc.id === 'poe' || npc.id === 'edgar') {
+                textEl.innerText = `"Zayn! We must stay humble and follow one direction. Speak to Grim Reaper to gain our soul powers!"`;
+            } else if (npc.id === 'louis') {
+                if (!npc.rescued) {
+                    textEl.innerText = `"Please help me! I am Louis. I am so sorry I wandered into the Skull Island labyrinth out of pride. Thank you for saving me!"`;
+                    npc.rescued = true;
+                    currentQuestIndex = 3;
+                    sfx.victory();
+                    setTimeout(() => triggerVictory(), 2000);
+                } else {
+                    textEl.innerText = `"I have learned my lesson! True friendship never strays from the correct path."`;
+                }
+            }
+
+            box.classList.remove('hidden');
+        }
+
+        function progressDialogue() {
+            if (activeNPC) {
+                activeNPC.dialogueStep++;
+                if (activeNPC.id === 'grim' && activeNPC.dialogueStep > 1) {
+                    document.getElementById('dialogue-box').classList.add('hidden');
+                    activeNPC = null;
+                } else {
+                    showDialogue(activeNPC);
+                }
+            } else {
+                document.getElementById('dialogue-box').classList.add('hidden');
+            }
+        }
+
+        // Combat & Skills
+        function playerAttack() {
+            sfx.attack();
+            // Melee slash particle / hit check
+            enemies.forEach((enemy, index) => {
+                let dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+                if (dist < 50) {
+                    enemy.hp -= (20 + player.level * 5);
+                    sfx.hit();
+                    if (enemy.hp <= 0) {
+                        enemies.splice(index, 1);
+                        player.xp += 35;
+                        player.gold += 15;
+                        checkLevelUp();
+                        if (currentQuestIndex === 1 && enemies.length === 0) {
+                            currentQuestIndex = 2;
+                        }
+                    }
+                }
+            });
+        }
+
+        function useSkill(num) {
+            if (num === 1) { // Hel-E-Cadabra
+                if (player.mana >= skills.helec.manaCost) {
+                    player.mana -= skills.helec.manaCost;
+                    sfx.magic();
+                    // Sacred spell sound & stun Dementors
+                    enemies.forEach(e => {
+                        e.stunned = 120; // 2 seconds stun
+                    });
+                    if (currentQuestIndex === 2) currentQuestIndex = 3;
+                }
+            } else if (num === 2) { // Soul Blast
+                if (player.mana >= skills.soulblast.manaCost) {
+                    player.mana -= skills.soulblast.manaCost;
+                    sfx.magic();
+                    projectiles.push({
+                        x: player.x,
+                        y: player.y,
+                        vx: player.facing === 'right' ? 8 : (player.facing === 'left' ? -8 : 0),
+                        vy: player.facing === 'down' ? 8 : (player.facing === 'up' ? -8 : -8),
+                        radius: 6,
+                        damage: 30
+                    });
+                }
+            } else if (num === 3) { // Humble Aura
+                if (player.mana >= skills.humble.manaCost) {
+                    player.mana -= skills.humble.manaCost;
+                    sfx.magic();
+                    player.invincibleTimer = 180; // 3 seconds immunity
+                }
+            } else if (num === 4) { // Dash
+                if (player.mana >= skills.dash.manaCost) {
+                    player.mana -= skills.dash.manaCost;
+                    sfx.attack();
+                    player.x += player.facing === 'right' ? 60 : -60;
+                    player.y += player.facing === 'down' ? 60 : -60;
+                }
+            }
+            updateHUDStats();
+        }
+
+        function checkLevelUp() {
+            if (player.xp >= player.nextXp) {
+                player.level++;
+                player.xp -= player.nextXp;
+                player.nextXp = Math.floor(player.nextXp * 1.4);
+                player.maxHp += 20;
+                player.hp = player.maxHp;
+                player.skillPoints++;
+                sfx.victory();
+            }
+        }
+
+        function triggerVictory() {
+            gameRunning = false;
+            sfx.victory();
+            document.getElementById('endgame-modal').classList.remove('hidden');
+        }
+
+        // Game Update Loop
+        function update() {
+            if (!gameRunning || isPaused) return;
+
+            // Player Movement
+            let dx = 0, dy = 0;
+            if (keys['w'] || keys['arrowup']) { dy = -1; player.facing = 'up'; }
+            if (keys['s'] || keys['arrowdown']) { dy = 1; player.facing = 'down'; }
+            if (keys['a'] || keys['arrowleft']) { dx = -1; player.facing = 'left'; }
+            if (keys['d'] || keys['arrowright']) { dx = 1; player.facing = 'right'; }
+
+            if (dx !== 0 && dy !== 0) {
+                dx *= 0.7071;
+                dy *= 0.7071;
+            }
+
+            let newX = player.x + dx * player.speed;
+            let newY = player.y + dy * player.speed;
+
+            // Collision Detection with Walls
+            let collided = false;
+            walls.forEach(w => {
+                if (newX + player.radius > w.x && newX - player.radius < w.x + w.w &&
+                    newY + player.radius > w.y && newY - player.radius < w.y + w.h) {
+                    collided = true;
+                }
+            });
+
+            if (!collided) {
+                player.x = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, newX));
+                player.y = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, newY));
+            }
+
+            // Passive Mana Regeneration
+            if (player.mana < player.maxMana) player.mana = Math.min(player.maxMana, player.mana + 0.05);
+            if (player.invincibleTimer > 0) player.invincibleTimer--;
+
+            // Enemies AI & Chase
+            enemies.forEach(enemy => {
+                if (enemy.stunned > 0) {
+                    enemy.stunned--;
+                    return;
+                }
+                let distToPlayer = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+                if (distToPlayer < 350) {
+                    let angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+                    let ex = enemy.x + Math.cos(angle) * enemy.speed;
+                    let ey = enemy.y + Math.sin(angle) * enemy.speed;
+
+                    // Wall collision for enemies
+                    let eCol = false;
+                    walls.forEach(w => {
+                        if (ex + enemy.radius > w.x && ex - enemy.radius < w.x + w.w &&
+                            ey + enemy.radius > w.y && ey - enemy.radius < w.y + w.h) {
+                            eCol = true;
+                        }
+                    });
+                    if (!eCol) {
+                        enemy.x = ex;
+                        enemy.y = ey;
+                    }
+
+                    // Damage Player
+                    if (distToPlayer < player.radius + enemy.radius && player.invincibleTimer <= 0) {
+                        player.hp -= 10;
+                        player.invincibleTimer = 60; // 1s iframe
+                        sfx.hit();
+                        if (player.hp <= 0) {
+                            gameRunning = false;
+                            document.getElementById('endgame-title').innerText = "Defeated in Maze";
+                            document.getElementById('endgame-desc').innerText = "The Dementors overpowered your party. Stay humble and try again!";
+                            document.getElementById('endgame-icon').innerHTML = `<i class="fa-solid fa-skull text-red-500"></i>`;
+                            document.getElementById('endgame-modal').classList.remove('hidden');
+                        }
+                    }
+                }
+            });
+
+            // Projectiles Update
+            projectiles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                // Wall collision
+                walls.forEach(w => {
+                    if (p.x > w.x && p.x < w.x + w.w && p.y > w.y && p.y < w.y + w.h) {
+                        projectiles.splice(index, 1);
+                    }
+                });
+                // Enemy collision
+                enemies.forEach((enemy, eIndex) => {
+                    if (Math.hypot(p.x - enemy.x, p.y - enemy.y) < enemy.radius + p.radius) {
+                        enemy.hp -= p.damage;
+                        projectiles.splice(index, 1);
+                        sfx.hit();
+                        if (enemy.hp <= 0) {
+                            enemies.splice(eIndex, 1);
+                            player.xp += 35;
+                            checkLevelUp();
+                        }
+                    }
+                });
+            });
+
+            updateHUDStats();
+        }
+
+        function updateHUDStats() {
+            document.getElementById('hp-text').innerText = `${Math.max(0, Math.floor(player.hp))}/${player.maxHp}`;
+            document.getElementById('hp-bar').style.width = `${(player.hp / player.maxHp) * 100}%`;
+            document.getElementById('mana-text').innerText = `${Math.floor(player.mana)}/${player.maxMana}`;
+            document.getElementById('mana-bar').style.width = `${(player.mana / player.maxMana) * 100}%`;
+            document.getElementById('player-level').innerText = `Lv.${player.level}`;
+            document.getElementById('xp-text').innerText = `${player.xp} / ${player.nextXp}`;
+            document.getElementById('gold-text').innerText = player.gold;
+            document.getElementById('humility-text').innerText = player.humility;
+
+            const currentQ = quests[currentQuestIndex];
+            if (currentQ) {
+                document.getElementById('quest-title').innerText = currentQ.title;
+                document.getElementById('quest-desc').innerText = currentQ.desc;
+            }
+        }
+
+        // Render Game Graphics
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Camera transformation centered on player
+            ctx.save();
+            let camX = canvas.width / 2 - player.x;
+            let camY = canvas.height / 2 - player.y;
+            ctx.translate(camX, camY);
+
+            // Draw Labyrinth Floor / Grid
+            ctx.strokeStyle = 'rgba(51, 65, 85, 0.2)';
+            ctx.lineWidth = 1;
+            let gridSize = 100;
+            for (let x = 0; x < WORLD_WIDTH; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_HEIGHT); ctx.stroke();
+            }
+            for (let y = 0; y < WORLD_HEIGHT; y += gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WORLD_WIDTH, y); ctx.stroke();
+            }
+
+            // Draw Walls
+            walls.forEach(w => {
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(w.x, w.y, w.w, w.h);
+                ctx.strokeStyle = '#9333ea';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(w.x, w.y, w.w, w.h);
+            });
+
+            // Draw NPCs
+            npcs.forEach(npc => {
+                ctx.beginPath();
+                ctx.arc(npc.x, npc.y, npc.radius, 0, Math.PI * 2);
+                ctx.fillStyle = npc.id === 'grim' ? '#581c87' : (npc.rescued ? '#15803d' : '#3b82f6');
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = npc.id === 'grim' ? '#c084fc' : '#9333ea';
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '11px Cinzel';
+                ctx.textAlign = 'center';
+                ctx.fillText(npc.name.split(' ')[0], npc.x, npc.y - npc.radius - 8);
+            });
+
+            // Draw Enemies (Dementors)
+            enemies.forEach(enemy => {
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
+                ctx.fillStyle = enemy.stunned > 0 ? '#38bdf8' : '#7f1d1d';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ef4444';
+                ctx.stroke();
+
+                // Health bar
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(enemy.x - 15, enemy.y - 28, 30, 5);
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(enemy.x - 15, enemy.y - 28, (enemy.hp / enemy.maxHp) * 30, 5);
+            });
+
+            // Draw Projectiles
+            projectiles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#c084fc';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#a855f7';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw Player (Zayn)
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fillStyle = player.invincibleTimer > 0 ? '#38bdf8' : '#9333ea';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#9333ea';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#e879f9';
+            ctx.stroke();
+
+            // Player staff / direction indicator
+            ctx.beginPath();
+            let dx = 0, dy = 0;
+            if (player.facing === 'up') dy = -20;
+            if (player.facing === 'down') dy = 20;
+            if (player.facing === 'left') dx = -20;
+            if (player.facing === 'right') dx = 20;
+            ctx.moveTo(player.x, player.y);
+            ctx.lineTo(player.x + dx, player.y + dy);
+            ctx.strokeStyle = '#f43f5e';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.restore();
+
+            // Draw Minimap
+            drawMiniMap();
+        }
+
+        function drawMiniMap() {
+            miniCtx.clearRect(0, 0, miniMapCanvas.width, miniMapCanvas.height);
+            let scaleX = miniMapCanvas.width / WORLD_WIDTH;
+            let scaleY = miniMapCanvas.height / WORLD_HEIGHT;
+
+            // Draw walls on minimap
+            miniCtx.fillStyle = '#334155';
+            walls.forEach(w => {
+                miniCtx.fillRect(w.x * scaleX, w.y * scaleY, w.w * scaleX, w.h * scaleY);
+            });
+
+            // Draw player on minimap
+            miniCtx.fillStyle = '#c084fc';
+            miniCtx.beginPath();
+            miniCtx.arc(player.x * scaleX, player.y * scaleY, 3, 0, Math.PI * 2);
+            miniCtx.fill();
+
+            // Draw enemies on minimap
+            miniCtx.fillStyle = '#ef4444';
+            enemies.forEach(e => {
+                miniCtx.beginPath();
+                miniCtx.arc(e.x * scaleX, e.y * scaleY, 2, 0, Math.PI * 2);
+                miniCtx.fill();
+            });
+        }
+
+        // Main Game Loop
+        function gameLoop() {
+            update();
+            draw();
+            if (gameRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+    </script>
+</body>
+</html>
